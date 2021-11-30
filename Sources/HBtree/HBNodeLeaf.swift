@@ -8,45 +8,45 @@
 import Foundation
 //import DequeModule
 ///
-final class HBNodeLeaf<T>: HBNode<T> {
+final class HBNodeLeaf<T> {
+    typealias Element = T
     typealias Values = ContiguousArray<T>
 //    typealias Values = Deque<T>
+    final var height: Int = 1
     final var values = Values()
     final let maxValues: Int
     ///
-    override var count: Int { values.count }
-    override var key: Int { values.count }
+    var count: Int { values.count }
+    var key: Int { values.count }
     ///
     init(_ element: Element, maxValues: Int) {
         values.append(element)
         self.maxValues = maxValues
-        super.init()
     }
     ///
     init(_ values: Values, maxValues: Int) {
         self.values = values
         self.maxValues = maxValues
-        super.init()
     }
     ///
     func directInsert(_ element: Element, at position: Int) {
         self.values.insert(element, at: position)
     }
     @inlinable
-    override func find(position: Int, current key: Int) -> Element {
+    final func find(position: Int, current key: Int) -> Element {
         let index = position - key
         guard index >= 0 && index < values.count else { fatalError("Position out of range") }
         return values[position - key]
     }
     ///
-    override func remove(at position: Int, current key: Int) -> Element {
+    func remove(at position: Int, current key: Int) -> Element {
         let valuePosition = position - key
         guard valuePosition >= 0 else { fatalError("Invalid position/key combo") }
         guard valuePosition < self.values.count else { fatalError("Invalid insert position for leaf node: \(valuePosition)") }
         return values.remove(at: valuePosition)
     }
     ///
-    override func append(_ element: Element) -> (/*left*/HBNode<T>?, /*right*/HBNode<T>?) {
+    func append(_ element: Element) -> (/*left*/AnyHBNode<T>?, /*right*/AnyHBNode<T>?) {
         if values.count < maxValues {
             values.append(element)
         } else {
@@ -54,12 +54,12 @@ final class HBNodeLeaf<T>: HBNode<T> {
             let newLeft = HBNodeLeaf(Values(self.values[0..<halfPosition]), maxValues: maxValues)
             let newRight = HBNodeLeaf(Values(self.values[halfPosition..<self.values.count]), maxValues: maxValues)
             _=newRight.append(element)
-            return (newLeft, newRight)
+            return (AnyHBNode<T>(newLeft), AnyHBNode<T>(newRight))
         }
         return (nil, nil)
     }
     ///
-    override func insert(_ element: T, at position: Int, current key: Int) -> (HBNode<T>?, HBNode<T>?) {
+    func insert(_ element: T, at position: Int, current key: Int) -> (AnyHBNode<T>?, AnyHBNode<T>?) {
         let valuePosition = position - key
         guard valuePosition >= 0 else { fatalError("Invalid position/key combo") }
         guard valuePosition <= values.count else { fatalError("Invalid insert position for leaf node: \(valuePosition)") }
@@ -76,12 +76,12 @@ final class HBNodeLeaf<T>: HBNode<T> {
             } else {
                 newRight.directInsert(element, at: valuePosition - halfPosition)
             }
-            return (newLeft, newRight)
+            return (AnyHBNode<T>(newLeft), AnyHBNode<T>(newRight))
         }
         return (nil, nil)
     }
     ///
-    override func setValue(element: Element, at position: Int) {
+    func setValue(element: Element, at position: Int) {
         guard position >= 0 && position < values.count else { fatalError("Position out of range") }
         values[position] = element
     }
