@@ -8,11 +8,11 @@
 import Foundation
 //import DequeModule
 ///
-class HBNodeLeaf<T>: HBNode<T> {
+final class HBNodeLeaf<T>: HBNode<T> {
     typealias Values = ContiguousArray<T>
 //    typealias Values = Deque<T>
-    var values = Values()
-    let maxValues: Int
+    final var values = Values()
+    final let maxValues: Int
     ///
     override var count: Int { values.count }
     override var key: Int { values.count }
@@ -29,8 +29,14 @@ class HBNodeLeaf<T>: HBNode<T> {
         super.init()
     }
     ///
-    override func directInsert(_ element: Element, at position: Int) {
+    func directInsert(_ element: Element, at position: Int) {
         self.values.insert(element, at: position)
+    }
+    @inlinable
+    override func find(position: Int, current key: Int) -> Element {
+        let index = position - key
+        guard index >= 0 && index < values.count else { fatalError("Position out of range") }
+        return values[position - key]
     }
     ///
     override func remove(at position: Int, current key: Int) -> Element {

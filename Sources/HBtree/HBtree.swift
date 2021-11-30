@@ -1,12 +1,12 @@
 
 ///
-public class HBTree<T: Equatable & Comparable> {
+public final class HBTree<T: Equatable & Comparable> {
     public typealias Element = T
     typealias BNodeEntries = HBNodeEntry<T>.BNodeEntries
     typealias BNode = HBNodeEntry<T>
     ///
-    var _root: BNode
-    var _maxNodes: Int
+    final var _root: BNode
+    final var _maxNodes: Int
     ///
     public var count: Int { return _root.key }
     public var height: Int { return _root.height }

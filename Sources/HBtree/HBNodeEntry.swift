@@ -8,13 +8,14 @@
 import Foundation
 //import DequeModule
 ///
-class HBNodeEntry<T> : HBNode<T> {
+final class HBNodeEntry<T> : HBNode<T> {
     typealias BNodeEntries = ContiguousArray<(Int,HBNode<T>)>
 //    typealias BNodeEntries = Deque<(Int,HBNode<T>)>
-    var children: BNodeEntries
-    let maxChildren: Int
+    final var children: BNodeEntries
+    final let maxChildren: Int
+    final var _key: Int = 0
     override var count: Int { children.count }
-    override var key: Int { children.reduce(0) { $0 + $1.0 } }
+    override var key: Int { _key = children.reduce(0) { $0 + $1.0 }; return _key }
     //
     init(children: BNodeEntries, maxChildren: Int) {
         self.children = children
@@ -29,7 +30,10 @@ class HBNodeEntry<T> : HBNode<T> {
         self.children = BNodeEntries()
         self.maxChildren = maxChildren
         super.init()
-        self.append(child)
+//        self.append(child)
+        _key += child.key
+        children.append((_key, child))
+
         self.updateHeight()
     }
     @discardableResult
@@ -62,6 +66,7 @@ class HBNodeEntry<T> : HBNode<T> {
     }
     ///
     override func append(_ element: Element) -> (/*left*/HBNode<T>?, /*right*/HBNode<T>?) {
+        _key += 1
         if let bn = children.last?.1  {
             let newNodes = bn.append(element)
             if nil != newNodes.0 {
@@ -75,16 +80,6 @@ class HBNodeEntry<T> : HBNode<T> {
         return (nil, nil)
     }
     ///
-    func append(_ child: HBNode<T>) {
-        children.append((child.key, child))
-        height = Swift.max(child.height, height)
-    }
-    ///
-    override func directInsert(_ element: Element, at position: Int) {
-        self.children.insert((1, HBNodeLeaf(element, maxValues: maxChildren)), at: position)
-        height = Swift.max(1, height)
-    }
-    ///
     override func insert(_ element: Element, at position: Int, current key: Int) -> (HBNode<T>?, HBNode<T>?) {
         var currentKey = key
         let childrenCount = children.count
@@ -92,6 +87,7 @@ class HBNodeEntry<T> : HBNode<T> {
             let childKey = children[i].0
             if position < currentKey + childKey {
                 let newNodes = children[i].1.insert(element, at: position, current: currentKey)
+                _key += 1
                 if nil != newNodes.0 {
                     return insertSplitNodes(newNodes, at: i)
                 } else {
@@ -106,29 +102,35 @@ class HBNodeEntry<T> : HBNode<T> {
     }
     ///
     @inlinable
-    func find(position: Int) -> Element {
-        var currentKey = 0
-        var currentNode = self
-        while true {
-            var searching = false
-            for n in currentNode.children {
-                if position < currentKey + n.0 {
-                    if let inner = n.1 as? HBNodeEntry {
-                        currentNode = inner
-                    } else if let leaf = n.1 as? HBNodeLeaf {
-                        return leaf.values[position - currentKey]
-                    } else {
-                        fatalError("What is this???")
-                    }
-                    searching = true
-                    break
+    final override func find(position: Int, current key: Int) -> Element {
+//        for n in children {
+//            if position < currentKeyLeft + n.0 {
+//                return n.1.find(position: position, current: currentKeyLeft)
+//            }
+//            currentKeyLeft += n.0
+//        }
+        if position < key + (_key / 2) {
+            var currentKeyLeft = key
+            for n in children {
+                if position < currentKeyLeft + n.0 {
+                    return n.1.find(position: position, current: currentKeyLeft)
                 }
-                currentKey += n.0
+                currentKeyLeft += n.0
             }
-            if !searching {
-                fatalError("Invalid position")
+        } else {
+            var currentKeyRight = key + _key
+            for i in (0 ..< children.count).reversed() {
+                currentKeyRight -= children[i].0
+                if position >= currentKeyRight {
+                    return children[i].1.find(position: position, current: currentKeyRight)
+                }
             }
         }
+        fatalError("Invalid position")
+    }
+    @inlinable
+    final func find(position: Int) -> Element {
+        return find(position: position, current: 0)
     }
     ///
     override func setValue(element: Element, at position: Int) {
@@ -293,9 +295,6 @@ class HBNodeEntry<T> : HBNode<T> {
             }
             return children[position].1.count == 0
         }
-        //        if freeLeft >= redistributeCount || freeRight >= redistributeCount {
-        //            return redistribute(at: position)
-        //        }
         return false
     }
     ///
@@ -324,22 +323,11 @@ class HBNodeEntry<T> : HBNode<T> {
                             children.remove(at: i)
                         }
                     }
-                    //                    if shiftFromLeft(at: i) {
-                    //                    } else if shiftFromRight(at: i) {
-                    //                    } else {
-                    //                        // couldn't fill this node using the peers, so then, distribute the remaining nodes to the peers.
-                    //                        if redistribute(at: i) {
-                    //                            children.remove(at: i)
-                    ////                            print("Redistribute: \(children[i].1.count)")
-                    //                        } else {
-                    ////                            if children.count == 1 {
-                    ////                            }
-                    //                        }
-                    //                    }
                 }
                 if curHeight == self.height {
                     updateHeight()
                 }
+                _key -= 1
                 return element
             }
             currentKey += curNodeKey
@@ -351,7 +339,7 @@ class HBNodeEntry<T> : HBNode<T> {
 ///
 extension HBNodeEntry: CustomStringConvertible {
     var description: String {
-        "key: \(key), height: \(height),  children: \(children.count ?? 0)"
+        "key: \(key):\(_key), height: \(height),  children: \(children.count ?? 0)"
         //        """
         //        key: \(key)
         //        height: \(height)
