@@ -6,18 +6,18 @@
 //
 
 import Foundation
-//import DequeModule
+
 ///
-final class HBNodeEntry<T> {
+final internal class HBNodeEntry<T> {
     typealias Element = T
     typealias BNodeEntries = ContiguousArray<(Int,AnyHBNode<T>)>
-//    typealias BNodeEntries = Deque<(Int,HBNode<T>)>
+
     final var height: Int = 1
     final var children: BNodeEntries
     final let maxChildren: Int
     final var _key: Int = 0
-    var count: Int { children.count }
-    var key: Int { _key = children.reduce(0) { $0 + $1.0 }; return _key }
+    final var count: Int { children.count }
+    final var key: Int { _key = children.reduce(0) { $0 + $1.0 }; return _key }
     //
     init(children: BNodeEntries, maxChildren: Int) {
         self.children = children
@@ -30,19 +30,19 @@ final class HBNodeEntry<T> {
     init(child: HBNodeEntry, maxChildren: Int) {
         self.children = BNodeEntries()
         self.maxChildren = maxChildren
-//        self.append(child)
+
         children.append((_key, AnyHBNode<T>(child)))
         _key = key
 
         self.updateHeight()
     }
     @discardableResult
-    func updateHeight() -> Int {
+    final func updateHeight() -> Int {
         self.height = children.reduce(1, { r, bn in Swift.max(r, bn.1.height + 1) })
         return self.height
     }
     ///
-    func insertSplitNodes(_ newNodes:(/*left*/AnyHBNode<T>?, /*right*/AnyHBNode<T>?), at position: Int) -> (/*left*/AnyHBNode<T>?, /*right*/AnyHBNode<T>?){
+    final func insertSplitNodes(_ newNodes:(/*left*/AnyHBNode<T>?, /*right*/AnyHBNode<T>?), at position: Int) -> (/*left*/AnyHBNode<T>?, /*right*/AnyHBNode<T>?){
         guard nil != newNodes.0 else { return (nil, nil) }
         let childrenCount = children.count
         children[position] = (newNodes.0!.key,  newNodes.0!)
@@ -65,7 +65,7 @@ final class HBNodeEntry<T> {
         return (nil, nil)
     }
     ///
-    func append(_ element: Element) -> (/*left*/AnyHBNode<T>?, /*right*/AnyHBNode<T>?) {
+    final func append(_ element: Element) -> (/*left*/AnyHBNode<T>?, /*right*/AnyHBNode<T>?) {
         _key += 1
         if let bn = children.last?.1  {
             let newNodes = bn.append(element)
@@ -80,7 +80,7 @@ final class HBNodeEntry<T> {
         return (nil, nil)
     }
     ///
-    func insert(_ element: Element, at position: Int, current key: Int) -> (AnyHBNode<T>?, AnyHBNode<T>?) {
+    final func insert(_ element: Element, at position: Int, current key: Int) -> (AnyHBNode<T>?, AnyHBNode<T>?) {
         var currentKey = key
         let childrenCount = children.count
         for i in 0..<childrenCount {
@@ -103,12 +103,6 @@ final class HBNodeEntry<T> {
     ///
     @inlinable
     final func find(position: Int, current key: Int) -> Element {
-//        for n in children {
-//            if position < currentKeyLeft + n.0 {
-//                return n.1.find(position: position, current: currentKeyLeft)
-//            }
-//            currentKeyLeft += n.0
-//        }
         if position < key + (_key / 2) {
             var currentKeyLeft = key
             for n in children {
@@ -133,7 +127,7 @@ final class HBNodeEntry<T> {
         return find(position: position, current: 0)
     }
     ///
-    func setValue(element: Element, at position: Int) {
+    final func setValue(element: Element, at position: Int) {
         var currentKey = 0
         var currentNode = self
         while true {
@@ -157,10 +151,9 @@ final class HBNodeEntry<T> {
                 fatalError("Invalid position")
             }
         }
-
     }
     ///
-    func shiftFromLeft(at position: Int) -> Bool {
+    final func shiftFromLeft(at position: Int) -> Bool {
         guard position > 1 else { return false }
         if let lnode = children[position-1].1.node,
            let rnode = children[position].1.node {
@@ -184,7 +177,7 @@ final class HBNodeEntry<T> {
         return true
     }
     ///
-    func shiftFromRight(at position: Int) -> Bool {
+    final func shiftFromRight(at position: Int) -> Bool {
         guard position < children.count - 1 else { return false }
         if let lnode = children[position].1.node,
            let rnode = children[position+1].1.node {
@@ -209,7 +202,7 @@ final class HBNodeEntry<T> {
     }
     ///
     @discardableResult
-    func shiftLeft(itemsCount: Int, at position: Int) -> Int {
+    final func shiftLeft(itemsCount: Int, at position: Int) -> Int {
         guard position > 1 else { return 0 }
         var availableOnLeft = (self.maxChildren - children[position-1].1.count)
         let toRelocate = itemsCount > availableOnLeft ? itemsCount - availableOnLeft: 0
@@ -237,7 +230,7 @@ final class HBNodeEntry<T> {
     }
     ///
     @discardableResult
-    func shiftRight(itemsCount: Int, at position: Int) -> Int {
+    final func shiftRight(itemsCount: Int, at position: Int) -> Int {
         guard position < children.count - 1 else { return 0 }
         var availableOnRight = (self.maxChildren - children[position+1].1.count)
         let toRelocate = itemsCount > availableOnRight ? itemsCount - availableOnRight: 0
@@ -266,7 +259,7 @@ final class HBNodeEntry<T> {
         return toMove
     }
     ///
-    func fillOrRedistributeUsingNeighbours(at position: Int) -> Bool {
+    final func fillOrRedistributeUsingNeighbours(at position: Int) -> Bool {
         var freeLeft = 0
         var freeRight = 0
         if position > 0 {
@@ -298,7 +291,7 @@ final class HBNodeEntry<T> {
         return false
     }
     ///
-    func remove(at position: Int, current key: Int) -> Element {
+    final func remove(at position: Int, current key: Int) -> Element {
         var currentKey = key
         
         for i in 0..<children.count {

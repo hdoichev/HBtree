@@ -6,18 +6,17 @@
 //
 
 import Foundation
-//import DequeModule
+
 ///
-final class HBNodeLeaf<T> {
+final internal class HBNodeLeaf<T> {
     typealias Element = T
     typealias Values = ContiguousArray<T>
-//    typealias Values = Deque<T>
     final var height: Int = 1
     final var values = Values()
     final let maxValues: Int
     ///
-    var count: Int { values.count }
-    var key: Int { values.count }
+    final var count: Int { values.count }
+    final var key: Int { values.count }
     ///
     init(_ element: Element, maxValues: Int) {
         values.append(element)
@@ -29,7 +28,7 @@ final class HBNodeLeaf<T> {
         self.maxValues = maxValues
     }
     ///
-    func directInsert(_ element: Element, at position: Int) {
+    final func directInsert(_ element: Element, at position: Int) {
         self.values.insert(element, at: position)
     }
     @inlinable
@@ -39,14 +38,14 @@ final class HBNodeLeaf<T> {
         return values[position - key]
     }
     ///
-    func remove(at position: Int, current key: Int) -> Element {
+    final func remove(at position: Int, current key: Int) -> Element {
         let valuePosition = position - key
         guard valuePosition >= 0 else { fatalError("Invalid position/key combo") }
         guard valuePosition < self.values.count else { fatalError("Invalid insert position for leaf node: \(valuePosition)") }
         return values.remove(at: valuePosition)
     }
     ///
-    func append(_ element: Element) -> (/*left*/AnyHBNode<T>?, /*right*/AnyHBNode<T>?) {
+    final func append(_ element: Element) -> (/*left*/AnyHBNode<T>?, /*right*/AnyHBNode<T>?) {
         if values.count < maxValues {
             values.append(element)
         } else {
@@ -59,7 +58,7 @@ final class HBNodeLeaf<T> {
         return (nil, nil)
     }
     ///
-    func insert(_ element: T, at position: Int, current key: Int) -> (AnyHBNode<T>?, AnyHBNode<T>?) {
+    final func insert(_ element: T, at position: Int, current key: Int) -> (AnyHBNode<T>?, AnyHBNode<T>?) {
         let valuePosition = position - key
         guard valuePosition >= 0 else { fatalError("Invalid position/key combo") }
         guard valuePosition <= values.count else { fatalError("Invalid insert position for leaf node: \(valuePosition)") }
@@ -81,7 +80,7 @@ final class HBNodeLeaf<T> {
         return (nil, nil)
     }
     ///
-    func setValue(element: Element, at position: Int) {
+    final func setValue(element: Element, at position: Int) {
         guard position >= 0 && position < values.count else { fatalError("Position out of range") }
         values[position] = element
     }
