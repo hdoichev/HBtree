@@ -7,23 +7,6 @@
 
 import Foundation
 
-//public protocol HBNodeProtocol {
-//    associatedtype Element
-//    var height: Int { get set }
-//    var count: Int { get } // The count of children (values) contained in the node
-//    var key: Int { get }
-//    func find(position: Int, current key: Int) -> Element
-//    func setValue(element: Element, at position: Int)
-//    func insert(_ element: Element, at position: Int, current key: Int) -> (/*left*/HBNodeProtocol?, /*right*/HBNodeProtocol?)
-//    //    func directInsert(_ element: Element, at position: Int) { fatalError("Must be implemented in derived class") }
-//    func append(_ element: Element) -> (/*left*/HBNodeProtocol?, /*right*/HBNodeProtocol?)
-//    func remove(at position: Int, current key: Int) -> Element
-//}
-//public protocol HBNodeAccessor {
-//    associatedtype Element
-//    var node: HBNodeProtocol { get }
-//}
-
 public struct AnyHBNode<T> {
     typealias Element = T
     let node: HBNodeEntry<T>?
