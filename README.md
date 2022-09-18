@@ -1,3 +1,3 @@
 # HBtree
 
-A description of this package.
+Simple BTree implementation.
